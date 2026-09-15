@@ -58,7 +58,7 @@
 
   /* ---------- left rail ---------- */
   .rail{
-    background:var(--marron);
+    background:linear-gradient(160deg, #2A170D 0%, #3E2415 48%, #65421F 100%);
     color:var(--crema);
     padding:40px 34px;
     display:flex;
@@ -71,12 +71,14 @@
     content:"";
     position:absolute; inset:0;
     background:
-      radial-gradient(480px 480px at -10% 110%, rgba(201,162,39,.16), transparent 60%);
+      radial-gradient(360px 360px at 15% 8%, rgba(246,240,228,.14), transparent 58%),
+      radial-gradient(520px 520px at 105% 90%, rgba(201,162,39,.24), transparent 62%),
+      linear-gradient(180deg, rgba(255,255,255,.035), transparent 45%, rgba(0,0,0,.10));
     pointer-events:none;
   }
   .brand{display:flex; flex-direction:column; align-items:flex-start; gap:10px; position:relative;}
-  .brand-badge{background:var(--crema); border-radius:5px; padding:10px 14px; display:inline-block; line-height:0;}
-  .brand img{width:172px; height:auto; display:block;}
+  .brand-badge{background:linear-gradient(135deg, #fffaf0 0%, #F6F0E4 58%, #E7D6B7 100%); border-radius:8px; padding:12px 16px; display:inline-block; line-height:0; box-shadow:0 10px 28px rgba(0,0,0,.18), 0 0 0 1px rgba(246,240,228,.35);}
+  .brand img{width:184px; height:auto; display:block; filter:drop-shadow(0 2px 2px rgba(36,28,21,.12));}
   .brand-txt{line-height:1.25;}
   .brand-txt .name{font-family:var(--serif); font-size:16.5px; font-weight:600;}
   .brand-txt .sub{font-size:11.5px; letter-spacing:.02em; color:rgba(246,240,228,.62);}
@@ -258,7 +260,14 @@
   .btn-ghost{background:transparent; color:var(--tinta-60); padding:13px 8px;}
   .btn-ghost:hover{color:var(--tinta);}
   .hint-enter{font-size:12px; color:var(--tinta-35); margin-left:auto;}
-  @media (max-width: 640px){.hint-enter{display:none;}}
+  .share-btn{
+    border:1px solid rgba(62,36,21,.18); background:rgba(255,253,248,.75); color:var(--marron);
+    padding:11px 16px; border-radius:2px; font-family:var(--sans); font-weight:600; font-size:13px;
+    cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:.16s ease;
+  }
+  .share-btn:hover{border-color:var(--oro); background:var(--marron-suave);}
+  .share-status{font-size:12px;color:var(--salvia);margin-top:10px;min-height:18px;}
+  @media (max-width: 640px){.hint-enter{display:none;}.share-btn{padding:11px 14px;}}
 
   /* ---------- welcome ---------- */
   .welcome{align-items:flex-start;}
@@ -577,10 +586,34 @@ function render(){
       </div>
       <div class="nav-row">
         <button class="btn btn-primary" id="startBtn">Comenzar<span>→</span></button>
+        <button class="share-btn" id="shareBtn" type="button">↗ Compartir encuesta</button>
       </div>
+      <div class="share-status" id="shareStatus" aria-live="polite"></div>
     `;
     stage.appendChild(el);
     document.getElementById('startBtn').onclick = ()=> goTo(0);
+    const shareBtn = document.getElementById('shareBtn');
+    const shareStatus = document.getElementById('shareStatus');
+    if(shareBtn){
+      shareBtn.onclick = async ()=>{
+        const shareData = {title: document.title, text: 'Completá la encuesta institucional del CEF San Francisco.', url: window.location.href};
+        try{
+          if(navigator.share){
+            await navigator.share(shareData);
+            if(shareStatus) shareStatus.textContent = 'Enlace listo para compartir.';
+          }else if(navigator.clipboard){
+            await navigator.clipboard.writeText(window.location.href);
+            if(shareStatus) shareStatus.textContent = 'Enlace copiado. Ya podés enviarlo por WhatsApp, correo o donde quieras.';
+          }else{
+            const tmp=document.createElement('input'); tmp.value=window.location.href; document.body.appendChild(tmp); tmp.select(); document.execCommand('copy'); tmp.remove();
+            if(shareStatus) shareStatus.textContent = 'Enlace copiado.';
+          }
+        }catch(err){
+          if(err && err.name === 'AbortError') return;
+          if(shareStatus) shareStatus.textContent = 'Podés copiar el enlace de esta página y enviarlo.';
+        }
+      };
+    }
     updateCordon(-1);
     return;
   }
