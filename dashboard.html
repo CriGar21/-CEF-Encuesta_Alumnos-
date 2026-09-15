@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEF San Francisco · Panel de respuestas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Piazzolla:opsz,wght@8..30,400;8..30,600;8..30,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --marron:#3E2415; --marron-suave:#EFE3D2;
+    --oro:#9C7A33; --terra:#BD5F26; --salvia:#5C7A5E;
+    --crema:#F6F0E4; --tinta:#241C15; --tinta-60:rgba(36,28,21,.62); --tinta-35:rgba(36,28,21,.35);
+    --serif:'Piazzolla', Georgia, serif; --sans:'Sora', -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:var(--sans); background:var(--crema); color:var(--tinta);}
+  h1,h2{font-family:var(--serif); font-weight:600; margin:0;}
+
+  /* ---------- login ---------- */
+  .login-wrap{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .login-card{
+    background:#fff; border:1px solid rgba(36,28,21,.1); border-radius:6px;
+    padding:40px; width:100%; max-width:380px; box-shadow:0 12px 40px rgba(36,28,21,.08);
+  }
+  .login-card h1{font-size:24px; margin-bottom:6px;}
+  .login-card p{color:var(--tinta-60); font-size:14px; margin:0 0 26px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12.5px; font-weight:600; color:var(--tinta-60); margin-bottom:6px;}
+  .field input{
+    width:100%; padding:11px 13px; border:1.5px solid rgba(36,28,21,.2); border-radius:4px;
+    font-family:var(--sans); font-size:14.5px; outline:none;
+  }
+  .field input:focus{border-color:var(--terra);}
+  .btn{
+    font-family:var(--sans); font-weight:600; font-size:14.5px;
+    padding:12px 22px; border-radius:4px; border:none; cursor:pointer;
+    background:var(--marron); color:var(--crema); width:100%;
+  }
+  .btn:hover{background:#281608;}
+  .btn:disabled{background:var(--tinta-35); cursor:not-allowed;}
+  .btn-ghost{background:transparent; color:var(--tinta-60); width:auto; padding:9px 14px;}
+  .btn-ghost:hover{color:var(--tinta); background:rgba(36,28,21,.06);}
+  .error-msg{color:#a4331b; font-size:13px; margin-top:14px; min-height:18px;}
+  .setup-warning{
+    background:#fff7ea; border:1px solid #e8c98a; color:#6b4c14;
+    padding:12px 14px; border-radius:4px; font-size:13px; margin-bottom:20px; line-height:1.5;
+  }
+
+  /* ---------- dashboard ---------- */
+  .app{display:none;}
+  .topbar{
+    background:var(--marron); color:var(--crema);
+    padding:16px 28px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  }
+  .topbar h1{font-size:19px; color:var(--crema);}
+  .topbar .sub{font-size:12px; color:rgba(246,240,228,.6); margin-top:2px;}
+  .topbar-right{display:flex; align-items:center; gap:10px;}
+
+  .toolbar{
+    padding:18px 28px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    border-bottom:1px solid rgba(36,28,21,.08); background:#fff;
+  }
+  .toolbar select{
+    padding:9px 12px; border-radius:4px; border:1.5px solid rgba(36,28,21,.2);
+    font-family:var(--sans); font-size:14px; background:#fff;
+  }
+  .count-badge{font-size:13px; color:var(--tinta-60);}
+  .btn-small{padding:9px 16px; font-size:13.5px; width:auto;}
+  .btn-terra{background:var(--terra);}
+  .btn-terra:hover{background:#9c4a1c;}
+
+  .table-wrap{padding:0 28px 40px; overflow-x:auto;}
+  table{border-collapse:collapse; width:100%; margin-top:18px; font-size:13.5px; background:#fff;}
+  th, td{
+    padding:10px 14px; text-align:left; border-bottom:1px solid rgba(36,28,21,.08);
+    white-space:nowrap; max-width:320px; overflow:hidden; text-overflow:ellipsis;
+  }
+  th{
+    background:var(--marron-suave); color:var(--marron); font-weight:600;
+    position:sticky; top:0; font-size:12.5px; text-transform:uppercase; letter-spacing:.02em;
+  }
+  tr:hover td{background:rgba(189,95,38,.05);}
+  td.wrap{white-space:normal; min-width:220px;}
+
+  .empty-state{padding:60px 28px; text-align:center; color:var(--tinta-60);}
+  .loading{padding:40px 28px; text-align:center; color:var(--tinta-60); font-size:14px;}
+</style>
+</head>
+<body>
+
+<!-- ============== LOGIN ============== -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <h1>Panel de respuestas</h1>
+    <p>CEF San Francisco · acceso para el equipo directivo</p>
+    <div id="setupWarning" class="setup-warning" style="display:none;">
+      Falta configurar Firebase en este archivo (bloque <code>CONFIG</code> al final del HTML). Mirá el README, sección "Panel propio con Firebase".
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="username" placeholder="tu.email@colegio.edu.ar">
+    </div>
+    <div class="field">
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" autocomplete="current-password">
+    </div>
+    <button class="btn" id="loginBtn">Ingresar</button>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ============== DASHBOARD ============== -->
+<div class="app" id="app">
+  <div class="topbar">
+    <div>
+      <h1>Panel de respuestas</h1>
+      <div class="sub">CEF San Francisco · 460 años</div>
+    </div>
+    <div class="topbar-right">
+      <span class="count-badge" id="userBadge"></span>
+      <button class="btn btn-ghost" id="logoutBtn">Salir</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <select id="surveySelect">
+      <option value="alumnos">Alumnos</option>
+      <option value="ex_alumnos">Ex Alumnos</option>
+      <option value="familias">Familias</option>
+      <option value="docentes">Docentes</option>
+      <option value="no_docentes">No Docentes</option>
+      <option value="equipo_directivo">Equipo Directivo</option>
+    </select>
+    <button class="btn btn-small btn-ghost" id="refreshBtn">↻ Actualizar</button>
+    <button class="btn btn-small btn-terra" id="downloadBtn" style="width:auto;">⬇ Descargar Excel</button>
+    <span class="count-badge" id="countBadge"></span>
+  </div>
+
+  <div id="tableArea">
+    <div class="loading">Cargando respuestas…</div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+/* ============================================================
+   Pegá acá el MISMO objeto de configuración que usaste en cada
+   encuesta-*.html (Firebase → Configuración del proyecto → tus apps).
+   ============================================================ */
+const CONFIG = {
+  FIREBASE_CONFIG: null
+  // FIREBASE_CONFIG: {
+  //   apiKey: "AIza...",
+  //   authDomain: "cef-encuestas.firebaseapp.com",
+  //   projectId: "cef-encuestas",
+  //   storageBucket: "cef-encuestas.appspot.com",
+  //   messagingSenderId: "...",
+  //   appId: "..."
+  // }
+};
+
+const SURVEY_LABELS = {
+  alumnos: "Alumnos", ex_alumnos: "Ex Alumnos", familias: "Familias",
+  docentes: "Docentes", no_docentes: "No Docentes", equipo_directivo: "Equipo Directivo"
+};
+
+let currentRows = [];
+let currentColumns = [];
+
+if(!CONFIG.FIREBASE_CONFIG){
+  document.getElementById('setupWarning').style.display = 'block';
+  document.getElementById('loginBtn').disabled = true;
+} else {
+  firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  document.getElementById('loginBtn').onclick = async ()=>{
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value;
+    const errEl = document.getElementById('loginError');
+    errEl.textContent = '';
+    try{
+      await auth.signInWithEmailAndPassword(email, pass);
+    }catch(err){
+      errEl.textContent = 'No se pudo ingresar. Revisá el email y la contraseña.';
+    }
+  };
+
+  document.getElementById('password').addEventListener('keydown', e=>{
+    if(e.key === 'Enter') document.getElementById('loginBtn').click();
+  });
+
+  document.getElementById('logoutBtn').onclick = ()=> auth.signOut();
+
+  auth.onAuthStateChanged(user=>{
+    if(user){
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      document.getElementById('userBadge').textContent = user.email;
+      loadData();
+    } else {
+      document.getElementById('loginWrap').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    }
+  });
+
+  document.getElementById('surveySelect').addEventListener('change', loadData);
+  document.getElementById('refreshBtn').addEventListener('click', loadData);
+  document.getElementById('downloadBtn').addEventListener('click', downloadExcel);
+
+  async function loadData(){
+    const survey = document.getElementById('surveySelect').value;
+    const tableArea = document.getElementById('tableArea');
+    tableArea.innerHTML = '<div class="loading">Cargando respuestas…</div>';
+
+    try{
+      const snap = await db.collection('responses')
+        .where('survey', '==', survey)
+        .orderBy('submitted_at', 'desc')
+        .get();
+
+      const rows = [];
+      snap.forEach(doc=> rows.push(doc.data()));
+      renderTable(rows);
+    }catch(err){
+      tableArea.innerHTML = '<div class="empty-state">No se pudieron cargar los datos.<br>' +
+        'Si es la primera vez, puede que falte crear el índice en Firestore: revisá la consola del navegador (F12) — Firebase suele dejar ahí un link para crearlo con un clic.</div>';
+      console.error(err);
+    }
+  }
+
+  function renderTable(rows){
+    const tableArea = document.getElementById('tableArea');
+    document.getElementById('countBadge').textContent = rows.length + (rows.length === 1 ? ' respuesta' : ' respuestas');
+
+    if(!rows.length){
+      tableArea.innerHTML = '<div class="empty-state">Todavía no hay respuestas para esta encuesta.</div>';
+      currentRows = []; currentColumns = [];
+      return;
+    }
+
+    // Columnas fijas primero, luego el resto (dinámicas por encuesta) en orden de aparición.
+    const fixed = ['submitted_at', 'respondent_id'];
+    const seen = new Set(fixed);
+    const dynamic = [];
+    rows.forEach(r=>{
+      Object.keys(r).forEach(k=>{
+        if(k === 'survey' || k === 'created_at') return;
+        if(!seen.has(k)){ seen.add(k); dynamic.push(k); }
+      });
+    });
+    const columns = [...fixed, ...dynamic];
+
+    let html = '<table><thead><tr>';
+    columns.forEach(c=> html += `<th>${escapeHtml(prettyLabel(c))}</th>`);
+    html += '</tr></thead><tbody>';
+    rows.forEach(r=>{
+      html += '<tr>';
+      columns.forEach(c=>{
+        const val = r[c] !== undefined && r[c] !== null ? String(r[c]) : '';
+        const long = val.length > 40;
+        html += `<td class="${long ? 'wrap' : ''}">${escapeHtml(val)}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    tableArea.innerHTML = html;
+
+    currentRows = rows.map(r=>{
+      const flat = {};
+      columns.forEach(c=> flat[prettyLabel(c)] = r[c] !== undefined ? r[c] : '');
+      return flat;
+    });
+    currentColumns = columns;
+  }
+
+  function prettyLabel(key){
+    return key.replace(/_/g,' ').replace(/\b\w/g, m=> m.toUpperCase());
+  }
+
+  function escapeHtml(str){
+    return str.replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function downloadExcel(){
+    if(!currentRows.length){ alert('No hay datos para descargar todavía.'); return; }
+    const survey = document.getElementById('surveySelect').value;
+    const ws = XLSX.utils.json_to_sheet(currentRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, SURVEY_LABELS[survey] || survey);
+    XLSX.writeFile(wb, `respuestas_${survey}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  }
+}
+</script>
+
+<!-- Firebase Analytics -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCNNXMTkpqnHeJibEN4LnFF4LA3XIrwnvU",
+    authDomain: "cef-encuestas.firebaseapp.com",
+    projectId: "cef-encuestas",
+    storageBucket: "cef-encuestas.firebasestorage.app",
+    messagingSenderId: "278614707881",
+    appId: "1:278614707881:web:97bd3448646c35592a23b8",
+    measurementId: "G-VWMVVJ5W59"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
+</body>
+</html>
