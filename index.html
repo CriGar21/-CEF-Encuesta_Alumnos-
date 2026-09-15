@@ -353,10 +353,108 @@
         gap:7px;
       }
     }
+
+    /* =========================
+       INTRO / SPLASH INICIAL
+       Igual estética que la encuesta
+       ========================= */
+    .intro-overlay{
+      position:fixed;
+      inset:0;
+      z-index:99999;
+      background:var(--crema);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+      transition:opacity .8s ease, visibility 0s linear .8s;
+    }
+
+    .intro-overlay.hide{
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+    }
+
+    .intro-overlay.gone{
+      display:none !important;
+    }
+
+    .intro-inner{
+      text-align:center;
+      padding:30px;
+    }
+
+    .intro-logo{
+      width:min(55vw,360px);
+      max-height:260px;
+      object-fit:contain;
+      display:block;
+      margin:0 auto 25px;
+      opacity:0;
+      transform:scale(.80);
+      animation:introIn 1.15s cubic-bezier(.2,.7,.3,1) forwards;
+    }
+
+    .intro-sub{
+      font-family:var(--serif);
+      font-size:18px;
+      font-weight:600;
+      color:var(--marron);
+      opacity:0;
+      animation:introFadeUp .8s ease forwards .35s;
+    }
+
+    .intro-sub span{
+      display:block;
+      font-family:var(--sans);
+      font-weight:400;
+      font-size:11px;
+      letter-spacing:.03em;
+      color:rgba(36,28,21,.62);
+      margin-top:6px;
+    }
+
+    @keyframes introIn{
+      0%{opacity:0;transform:scale(.80)}
+      55%{opacity:1;transform:scale(1.04)}
+      100%{opacity:1;transform:scale(1)}
+    }
+
+    @keyframes introFadeUp{
+      0%{opacity:0;transform:translateY(8px)}
+      100%{opacity:1;transform:translateY(0)}
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      .intro-logo,.intro-sub{
+        animation:none;
+        opacity:1;
+        transform:none;
+      }
+      .intro-overlay{
+        transition:none;
+      }
+    }
+
   </style>
 </head>
 
 <body>
+
+  <!-- Pantalla inicial: el logo aparece y luego desaparece -->
+  <div class="intro-overlay" id="introOverlay" aria-label="Presentación CEF">
+    <div class="intro-inner">
+      <img class="intro-logo" src="logo-cef.png" alt="Centro Educativo Franciscano">
+      <div class="intro-sub">
+        Centro Educativo Franciscano
+        <span>1566 — 2026 · 460 años</span>
+      </div>
+    </div>
+  </div>
+
 
   <div class="page">
 
@@ -475,6 +573,32 @@
     </main>
 
   </div>
+
+
+  <script>
+    // Intro: aparece al entrar, permanece 1 segundo y luego se desvanece.
+    (function () {
+      function iniciarIntro() {
+        const intro = document.getElementById("introOverlay");
+        if (!intro) return;
+
+        setTimeout(function () {
+          intro.classList.add("hide");
+
+          setTimeout(function () {
+            intro.classList.add("gone");
+          }, 850);
+        }, 1000);
+      }
+
+      // No esperamos a que carguen fuentes, imágenes u otros recursos.
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", iniciarIntro, { once: true });
+      } else {
+        iniciarIntro();
+      }
+    })();
+  </script>
 
 </body>
 </html>
