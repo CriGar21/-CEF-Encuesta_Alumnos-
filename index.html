@@ -193,7 +193,7 @@
 
     .cards{
       display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
+      grid-template-columns:1fr;
       gap:17px;
     }
 
@@ -220,9 +220,25 @@
       background:var(--terracota);
     }
 
-    .card.management::before{
-      background:var(--ocre);
+    .card.management{
+      min-height:0;
+      margin-top:2px;
+      padding:19px 22px;
+      background:linear-gradient(135deg,#3E2415 0%,#5A2F17 55%,#6B4A25 100%);
+      color:var(--crema);
+      border-color:rgba(156,122,51,.34);
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      gap:20px;
     }
+    .card.management::before{display:none;}
+    .card.management h3{font-size:21px;color:var(--crema);margin:0 0 4px;}
+    .card.management p{color:rgba(246,240,228,.68);max-width:none;}
+    .card.management .go{margin-top:0;color:#E6C96A;white-space:nowrap;}
+    .card.management:hover{background:linear-gradient(135deg,#321C10 0%,#4E2916 55%,#61421F 100%);border-color:rgba(201,162,39,.55);box-shadow:0 14px 30px rgba(62,36,21,.18);}
+    .management-tag{font-size:9px;text-transform:uppercase;letter-spacing:.18em;font-weight:700;color:#E6C96A;margin-bottom:6px;}
+    .management-copy{flex:1;min-width:0;}
 
     .card:hover{
       transform:translateY(-4px);
@@ -347,6 +363,12 @@
       .card{
         min-height:190px;
       }
+
+      .card.management{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .card.management .go{align-self:flex-end;}
 
       .bottom{
         flex-direction:column;
