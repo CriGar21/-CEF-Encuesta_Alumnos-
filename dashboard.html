@@ -280,7 +280,7 @@ if(!CONFIG.FIREBASE_CONFIG){
     const dynamic = [];
     rows.forEach(r=>{
       Object.keys(r).forEach(k=>{
-        if(k === 'survey' || k === 'created_at') return;
+        if(k === 'survey' || k === 'created_at' || k.endsWith('_label')) return;
         if(!seen.has(k)){ seen.add(k); dynamic.push(k); }
       });
     });
@@ -292,7 +292,10 @@ if(!CONFIG.FIREBASE_CONFIG){
     rows.forEach(r=>{
       html += '<tr>';
       columns.forEach(c=>{
-        const val = r[c] !== undefined && r[c] !== null ? String(r[c]) : '';
+        // Compatibilidad con respuestas antiguas que guardaban valor numérico + *_label.
+        const legacyLabel = r[c + '_label'];
+        const raw = legacyLabel !== undefined && legacyLabel !== null ? legacyLabel : r[c];
+        const val = raw !== undefined && raw !== null ? String(raw) : '';
         const long = val.length > 40;
         html += `<td class="${long ? 'wrap' : ''}">${escapeHtml(val)}</td>`;
       });
@@ -303,7 +306,7 @@ if(!CONFIG.FIREBASE_CONFIG){
 
     currentRows = rows.map(r=>{
       const flat = {};
-      columns.forEach(c=> flat[prettyLabel(c)] = r[c] !== undefined ? r[c] : '');
+      columns.forEach(c=> flat[prettyLabel(c)] = r[c + '_label'] !== undefined ? r[c + '_label'] : (r[c] !== undefined ? r[c] : ''));
       return flat;
     });
     currentColumns = columns;
