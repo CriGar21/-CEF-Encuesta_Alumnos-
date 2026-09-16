@@ -460,17 +460,32 @@ const QUESTIONS = [
     id: "valora",
     eyebrow: "Tu rutina diaria",
     title: "¿Qué es lo que más valorás de tu día a día en el colegio?",
-    help: "Puede ser una materia, un espacio, una persona o una actividad.",
-    type: "text",
-    placeholder: "Por ejemplo: el trato con mis compañeros, cierto profesor, el recreo, un taller…"
+    help: "Elegí la opción que mejor represente tu respuesta.",
+    type: "pills",
+    options: [
+      "Las materias y lo que aprendo",
+      "Los profesores y su acompañamiento",
+      "Mis compañeros y la convivencia",
+      "Los espacios y actividades del colegio",
+      "Los recreos y momentos de descanso",
+      "Otro aspecto"
+    ]
   },
   {
     id: "no_disfruta",
     eyebrow: "Tu rutina diaria",
-    title: "¿Y qué es lo que menos disfrutás?",
-    help: "Sé concreto: nos sirve más un ejemplo puntual que una queja general.",
-    type: "text",
-    placeholder: "Escribí con confianza, la respuesta es anónima…"
+    title: "¿Qué es lo que menos disfrutás del colegio?",
+    help: "Elegí la opción que mejor represente tu respuesta.",
+    type: "pills",
+    options: [
+      "Las materias o tareas",
+      "La forma de dar las clases",
+      "La convivencia o el trato",
+      "Los horarios y la organización",
+      "Los espacios físicos",
+      "Los recreos o tiempos de descanso",
+      "Otro aspecto"
+    ]
   },
   {
     id: "convivencia",
@@ -484,15 +499,15 @@ const QUESTIONS = [
     id: "futuro",
     eyebrow: "Mirando adelante",
     title: "¿Sentís que lo que aprendés te da herramientas útiles para tu futuro universitario o laboral?",
-    help: "",
+    help: "Elegí una opción. En los resultados se mostrará directamente el texto de tu respuesta.",
     type: "scale",
     options: ["Nada útil", "Poco útil", "Algo útil", "Bastante útil", "Muy útil"]
   },
   {
     id: "director",
     eyebrow: "Director por un día",
-    title: "Si pudieras cambiar algo del colegio para sentirte mejor preparado, ¿qué cambiarías y por qué?",
-    help: "Espacios físicos, tecnología, forma de dar clase: la idea que se te ocurra primero suele ser la más sincera.",
+    title: "Si pudieras cambiar una cosa del colegio, ¿qué cambiarías y por qué?",
+    help: "Esta es la única pregunta abierta: podés escribir libremente tu propuesta.",
     type: "text",
     placeholder: "Contanos tu idea, aunque parezca ambiciosa…"
   }
@@ -777,14 +792,14 @@ async function submitAnswers(){
   }
 }
 
-// Aplana { pregunta: valor|{value,label} } para guardarlo en columnas simples.
+// Aplana { pregunta: valor|{value,label} } para guardar datos fáciles de leer y normalizar.
+// Las escalas se guardan directamente como texto (ej. "Algo útil") y no como 3 + etiqueta.
 function flattenForStorage(answersObj){
   const out = {};
   Object.keys(answersObj).forEach(key=>{
     const v = answersObj[key];
     if(v && typeof v === 'object' && 'value' in v){
-      out[key] = v.value;
-      out[key + '_label'] = v.label;
+      out[key] = v.label;
     } else {
       out[key] = v;
     }
