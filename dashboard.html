@@ -2,353 +2,116 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CEF San Francisco · Panel de respuestas</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CEF San Francisco · Panel institucional</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Piazzolla:opsz,wght@8..30,400;8..30,600;8..30,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Piazzolla:opsz,wght@8..30,400;8..30,500;8..30,600;8..30,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-  :root{
-    --marron:#3E2415; --marron-suave:#EFE3D2;
-    --oro:#9C7A33; --terra:#BD5F26; --salvia:#5C7A5E;
-    --crema:#F6F0E4; --tinta:#241C15; --tinta-60:rgba(36,28,21,.62); --tinta-35:rgba(36,28,21,.35);
-    --serif:'Piazzolla', Georgia, serif; --sans:'Sora', -apple-system, sans-serif;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0; font-family:var(--sans); background:var(--crema); color:var(--tinta);}
-  h1,h2{font-family:var(--serif); font-weight:600; margin:0;}
-
-  /* ---------- login ---------- */
-  .login-wrap{
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
-  }
-  .login-card{
-    background:#fff; border:1px solid rgba(36,28,21,.1); border-radius:10px;
-    padding:34px 40px 40px; width:100%; max-width:400px; box-shadow:0 18px 50px rgba(36,28,21,.10);
-  }
-  .login-brand{display:flex; justify-content:center; margin-bottom:22px;}
-  .login-brand-badge{
-    background:linear-gradient(135deg,#fffaf0 0%,#F6F0E4 58%,#E7D6B7 100%);
-    border-radius:9px; padding:11px 15px; line-height:0;
-    box-shadow:0 8px 22px rgba(36,28,21,.10),0 0 0 1px rgba(156,122,51,.18);
-  }
-  .login-brand img{width:190px;height:auto;display:block;}
-  .login-card h1{font-size:24px; margin-bottom:6px;}
-  .login-card p{color:var(--tinta-60); font-size:14px; margin:0 0 26px;}
-  .field{margin-bottom:16px;}
-  .field label{display:block; font-size:12.5px; font-weight:600; color:var(--tinta-60); margin-bottom:6px;}
-  .field input{
-    width:100%; padding:11px 13px; border:1.5px solid rgba(36,28,21,.2); border-radius:4px;
-    font-family:var(--sans); font-size:14.5px; outline:none;
-  }
-  .field input:focus{border-color:var(--terra);}
-  .btn{
-    font-family:var(--sans); font-weight:600; font-size:14.5px;
-    padding:12px 22px; border-radius:4px; border:none; cursor:pointer;
-    background:var(--marron); color:var(--crema); width:100%;
-  }
-  .btn:hover{background:#281608;}
-  .btn:disabled{background:var(--tinta-35); cursor:not-allowed;}
-  .btn-ghost{background:transparent; color:var(--tinta-60); width:auto; padding:9px 14px;}
-  .btn-ghost:hover{color:var(--tinta); background:rgba(36,28,21,.06);}
-  .error-msg{color:#a4331b; font-size:13px; margin-top:14px; min-height:18px;}
-  .setup-warning{
-    background:#fff7ea; border:1px solid #e8c98a; color:#6b4c14;
-    padding:12px 14px; border-radius:4px; font-size:13px; margin-bottom:20px; line-height:1.5;
-  }
-
-  /* ---------- dashboard ---------- */
-  .app{display:none;}
-  .topbar{
-    background:linear-gradient(135deg,#2A170D 0%,#3E2415 48%,#65421F 100%); color:var(--crema);
-    padding:14px 28px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
-    position:relative; overflow:hidden;
-  }
-  .topbar::after{
-    content:""; position:absolute; inset:0; pointer-events:none;
-    background:radial-gradient(430px 220px at 18% -40%,rgba(246,240,228,.15),transparent 62%),
-               radial-gradient(520px 260px at 100% 120%,rgba(201,162,39,.22),transparent 64%);
-  }
-  .topbar > *{position:relative;z-index:1;}
-  .topbar-brand{display:flex;align-items:center;gap:14px;}
-  .topbar-logo-wrap{
-    background:linear-gradient(135deg,#fffaf0 0%,#F6F0E4 58%,#E7D6B7 100%);
-    border-radius:7px; padding:7px 10px; line-height:0;
-    box-shadow:0 5px 16px rgba(0,0,0,.15);
-  }
-  .topbar-logo{width:120px;height:auto;display:block;}
-  .topbar h1{font-size:19px; color:var(--crema);}
-  .topbar .sub{font-size:12px; color:rgba(246,240,228,.6); margin-top:2px;}
-  .topbar-right{display:flex; align-items:center; gap:10px;}
-
-  .toolbar{
-    padding:18px 28px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-    border-bottom:1px solid rgba(36,28,21,.08); background:#fff;
-  }
-  .toolbar select{
-    padding:9px 12px; border-radius:4px; border:1.5px solid rgba(36,28,21,.2);
-    font-family:var(--sans); font-size:14px; background:#fff;
-  }
-  .count-badge{font-size:13px; color:var(--tinta-60);}
-  .btn-small{padding:9px 16px; font-size:13.5px; width:auto;}
-  .btn-terra{background:var(--terra);}
-  .btn-terra:hover{background:#9c4a1c;}
-
-  .table-wrap{padding:0 28px 40px; overflow-x:auto;}
-  table{border-collapse:collapse; width:100%; margin-top:18px; font-size:13.5px; background:#fff;}
-  th, td{
-    padding:10px 14px; text-align:left; border-bottom:1px solid rgba(36,28,21,.08);
-    white-space:nowrap; max-width:320px; overflow:hidden; text-overflow:ellipsis;
-  }
-  th{
-    background:var(--marron-suave); color:var(--marron); font-weight:600;
-    position:sticky; top:0; font-size:12.5px; text-transform:uppercase; letter-spacing:.02em;
-  }
-  tr:hover td{background:rgba(189,95,38,.05);}
-  td.wrap{white-space:normal; min-width:220px;}
-
-  .empty-state{padding:60px 28px; text-align:center; color:var(--tinta-60);}
-  .loading{padding:40px 28px; text-align:center; color:var(--tinta-60); font-size:14px;}
+:root{--marron:#3E2415;--marron2:#65421F;--oro:#9C7A33;--terra:#BD5F26;--crema:#F6F0E4;--paper:#fffdf9;--tinta:#241C15;--muted:#6f655d;--line:rgba(36,28,21,.12);--serif:'Piazzolla',Georgia,serif;--sans:'Sora',system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--crema);color:var(--tinta);font-family:var(--sans)}button,input,select{font:inherit}.hidden{display:none!important}
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(700px 500px at 50% 0%,#fffaf0,var(--crema) 70%)}
+.login-card{width:min(440px,100%);background:var(--paper);border:1px solid var(--line);padding:34px 38px 38px;border-radius:10px;box-shadow:0 24px 70px rgba(62,36,21,.13)}.login-brand{text-align:center;margin-bottom:22px}.login-brand img{width:210px;max-width:90%}.login-card h1{font:600 28px var(--serif);margin:0 0 5px}.login-card p{font-size:13px;color:var(--muted);margin:0 0 25px}.field{margin-bottom:15px}.field label{display:block;font-size:12px;font-weight:700;color:var(--marron);margin-bottom:6px}.field input{width:100%;height:42px;border:1px solid rgba(36,28,21,.2);border-radius:5px;padding:9px 12px;outline:none;background:white}.field input:focus{border-color:var(--terra)}.btn{border:0;border-radius:5px;cursor:pointer;font-weight:700}.primary{background:var(--marron);color:var(--crema);padding:12px 18px;width:100%}.primary:hover{background:#2d180d}.error{color:#a4331b;font-size:12px;min-height:18px;margin-top:12px}
+.app{display:none;min-height:100vh}.topbar{background:linear-gradient(135deg,#2A170D,#3E2415 55%,#68431f);color:var(--crema);padding:14px 28px;display:flex;justify-content:space-between;align-items:center;gap:18px}.brand{display:flex;align-items:center;gap:13px}.brand img{width:142px;background:linear-gradient(135deg,#fffaf0,#e7d6b7);padding:6px 9px;border-radius:7px}.brand h1{font:600 21px var(--serif);margin:0}.brand p{font-size:10.5px;color:rgba(246,240,228,.72);margin:3px 0 0}.top-actions{display:flex;align-items:center;gap:10px}.user{font-size:11px;color:rgba(246,240,228,.75)}.ghost{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:var(--crema);padding:8px 13px}
+.container{width:min(1480px,100%);margin:auto;padding:28px}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:20px}.eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--terra);margin-bottom:6px}.hero h2{font:600 clamp(30px,4vw,48px) var(--serif);margin:0}.hero p{font-size:13px;color:var(--muted);margin:6px 0 0}.last{font-size:11px;color:var(--muted);text-align:right}
+.toolbar{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 18px}.toolbar .btn{padding:10px 14px;border:1px solid rgba(36,28,21,.14);background:var(--paper);color:var(--marron)}.toolbar .btn:hover{border-color:var(--terra)}.toolbar .btn.accent{background:var(--terra);color:white;border-color:var(--terra)}
+.filters{background:var(--paper);border:1px solid var(--line);padding:16px;display:grid;grid-template-columns:1.1fr 1.5fr 1fr 1fr 1fr auto;gap:10px;align-items:end;box-shadow:0 10px 30px rgba(62,36,21,.05);margin-bottom:18px}.filter label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px}.filter select,.filter input{width:100%;height:39px;border:1px solid rgba(36,28,21,.16);border-radius:4px;background:#fff;padding:8px 10px;color:var(--tinta);outline:none}.filter select:focus,.filter input:focus{border-color:var(--terra)}
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:18px}.stat{background:var(--paper);border:1px solid var(--line);padding:15px 17px;min-height:92px}.stat .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}.stat .v{font:600 29px var(--serif);color:var(--marron);margin-top:4px}.stat .s{font-size:10px;color:var(--muted);margin-top:2px}
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;margin:27px 0 11px}.section-head h3{font:600 24px var(--serif);margin:0}.section-head p{font-size:11px;color:var(--muted);margin:4px 0 0}.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.chart-card{background:var(--paper);border:1px solid var(--line);padding:17px;min-height:310px}.chart-card.wide{grid-column:1/-1}.chart-title{font:600 17px var(--serif);margin:0 0 3px}.chart-meta{font-size:10px;color:var(--muted);margin-bottom:9px}.chart-box{height:235px;position:relative}
+.open-card,.data-card{background:var(--paper);border:1px solid var(--line);padding:18px;margin-top:14px}.open-list{display:grid;gap:9px;max-height:520px;overflow:auto}.open-item{border-left:3px solid var(--oro);background:#fffaf2;padding:10px 13px}.open-item .who{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}.open-item .txt{font-size:12.5px;line-height:1.55}.empty{padding:42px;text-align:center;color:var(--muted);background:var(--paper);border:1px dashed var(--line)}
+.data-wrap{overflow:auto;border:1px solid var(--line);max-height:560px}.data-table{width:100%;border-collapse:collapse;min-width:1050px;font-size:10.5px}.data-table th{position:sticky;top:0;background:#eee1cf;color:var(--marron);text-align:left;padding:9px;border-bottom:1px solid var(--line);z-index:1}.data-table td{padding:8px 9px;border-bottom:1px solid rgba(36,28,21,.08);vertical-align:top;max-width:330px}.data-table tr:nth-child(even) td{background:#fffaf3}.data-note{font-size:10.5px;color:var(--muted);margin:0 0 10px}.footer{padding:28px 0 42px;color:var(--muted);font-size:10px;text-align:center}
+@media(max-width:1120px){.filters{grid-template-columns:repeat(3,1fr)}.summary{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.topbar{padding:12px 16px}.brand img{width:104px}.brand h1{font-size:17px}.user{display:none}.container{padding:18px 13px}.hero{display:block}.last{text-align:left;margin-top:10px}.filters{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.chart-grid{grid-template-columns:1fr}.chart-card.wide{grid-column:auto}.toolbar .btn{flex:1 1 auto}}
+@media(max-width:430px){.summary{grid-template-columns:1fr}.brand p{display:none}}
+@media print{.login-wrap,.topbar,.toolbar,.filters,.hero .last{display:none!important}.app{display:block!important}.container{padding:0}.chart-card,.stat,.open-card,.data-card{break-inside:avoid;box-shadow:none}.data-wrap{max-height:none;overflow:visible}.footer{padding-bottom:0}}
 </style>
 </head>
 <body>
+<div class="login-wrap" id="loginWrap"><div class="login-card">
+  <div class="login-brand"><img src="logo-cef-final.png" alt="Centro Educativo Franciscano"></div>
+  <h1>Panel institucional</h1><p>CEF San Francisco · acceso privado a resultados</p>
+  <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username" placeholder="tu.email@colegio.edu.ar"></div>
+  <div class="field"><label>Contraseña</label><input id="password" type="password" autocomplete="current-password"></div>
+  <button class="btn primary" id="loginBtn">Ingresar al panel</button><div class="error" id="loginError"></div>
+</div></div>
 
-<!-- ============== LOGIN ============== -->
-<div class="login-wrap" id="loginWrap">
-  <div class="login-card">
-    <div class="login-brand"><div class="login-brand-badge"><img src="logo-cef.png" alt="Centro Educativo Franciscano"></div></div>
-    <h1>Panel de respuestas</h1>
-    <p>CEF San Francisco · acceso para el equipo directivo</p>
-    <div id="setupWarning" class="setup-warning" style="display:none;">
-      Falta configurar Firebase en este archivo (bloque <code>CONFIG</code> al final del HTML). Mirá el README, sección "Panel propio con Firebase".
-    </div>
-    <div class="field">
-      <label for="email">Email</label>
-      <input type="email" id="email" autocomplete="username" placeholder="tu.email@colegio.edu.ar">
-    </div>
-    <div class="field">
-      <label for="password">Contraseña</label>
-      <input type="password" id="password" autocomplete="current-password">
-    </div>
-    <button class="btn" id="loginBtn">Ingresar</button>
-    <div class="error-msg" id="loginError"></div>
-  </div>
-</div>
-
-<!-- ============== DASHBOARD ============== -->
 <div class="app" id="app">
-  <div class="topbar">
-    <div class="topbar-brand">
-      <div class="topbar-logo-wrap"><img class="topbar-logo" src="logo-cef.png" alt="Centro Educativo Franciscano"></div>
-      <div>
-        <h1>Panel de respuestas</h1>
-        <div class="sub">CEF San Francisco · 460 años</div>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <span class="count-badge" id="userBadge"></span>
-      <button class="btn btn-ghost" id="logoutBtn">Salir</button>
-    </div>
-  </div>
-
-  <div class="toolbar">
-    <select id="surveySelect">
-      <option value="alumnos">Alumnos</option>
-      <option value="ex_alumnos">Ex Alumnos</option>
-      <option value="familias">Familias</option>
-      <option value="docentes">Docentes</option>
-      <option value="no_docentes">No Docentes</option>
-      <option value="equipo_directivo">Equipo Directivo</option>
-    </select>
-    <button class="btn btn-small btn-ghost" id="refreshBtn">↻ Actualizar</button>
-    <button class="btn btn-small btn-terra" id="downloadBtn" style="width:auto;">⬇ Descargar Excel</button>
-    <span class="count-badge" id="countBadge"></span>
-  </div>
-
-  <div id="tableArea">
-    <div class="loading">Cargando respuestas…</div>
-  </div>
+<header class="topbar"><div class="brand"><img src="logo-cef-final.png" alt="CEF"><div><h1>Panel institucional de resultados</h1><p>Encuestas CEF San Francisco · 2026</p></div></div><div class="top-actions"><span class="user" id="userBadge"></span><button class="btn ghost" id="logoutBtn">Salir</button></div></header>
+<main class="container">
+<section class="hero"><div><div class="eyebrow">Lectura institucional</div><h2>Resultados integrados</h2><p>Explorá las seis encuestas, filtrá respuestas, analizá tendencias y descargá la información.</p></div><div class="last" id="lastUpdate">Sin datos cargados</div></section>
+<div class="toolbar">
+ <button class="btn accent" id="downloadAllCsv">⬇ Descargar todo · CSV</button>
+ <button class="btn" id="downloadFilteredCsv">⬇ Descargar filtrado · CSV</button>
+ <button class="btn" id="downloadExcel">⬇ Descargar Excel</button>
+ <button class="btn" id="downloadOpenCsv">⬇ Comentarios abiertos</button>
+ <button class="btn" id="downloadJson">⬇ Respaldo completo · JSON</button>
+ <button class="btn" id="printBtn">🖨 Imprimir / Guardar PDF</button>
 </div>
-
+<section class="filters">
+ <div class="filter"><label>Encuesta</label><select id="surveyFilter"><option value="all">Todas las encuestas</option></select></div>
+ <div class="filter"><label>Pregunta</label><select id="questionFilter"><option value="all">Todas las preguntas cerradas</option></select></div>
+ <div class="filter"><label>Desde</label><input id="dateFrom" type="date"></div>
+ <div class="filter"><label>Hasta</label><input id="dateTo" type="date"></div>
+ <div class="filter"><label>Opción</label><select id="optionFilter"><option value="all">Todas</option></select></div>
+ <button class="btn primary" style="height:39px;width:auto;padding:0 14px" id="resetBtn">Limpiar</button>
+</section>
+<section class="summary" id="summary"></section>
+<section><div class="section-head"><div><h3>Indicadores y gráficos</h3><p id="chartHint">Cargando resultados…</p></div></div><div class="chart-grid" id="charts"></div></section>
+<section class="open-card"><div class="section-head" style="margin-top:0"><div><h3>Comentarios y respuestas abiertas</h3><p>Se muestran todas las preguntas de texto disponibles en cada encuesta.</p></div></div><div class="open-list" id="openList"></div></section>
+<section class="data-card"><div class="section-head" style="margin-top:0"><div><h3>Detalle de respuestas</h3><p class="data-note" id="dataNote">—</p></div></div><div class="data-wrap" id="dataWrap"></div></section>
+<div class="footer">Centro Educativo Franciscano · Panel privado · Los datos se leen directamente de Firebase.</div>
+</main></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 <script>
-/* ============================================================
-   Pegá acá el MISMO objeto de configuración que usaste en cada
-   encuesta-*.html (Firebase → Configuración del proyecto → tus apps).
-   ============================================================ */
-const CONFIG = {
-  FIREBASE_CONFIG: {
-    apiKey: "AIzaSyCNNXMTkpqnHeJibEN4LnFF4LA3XIrwnvU",
-    authDomain: "cef-encuestas.firebaseapp.com",
-    projectId: "cef-encuestas",
-    storageBucket: "cef-encuestas.firebasestorage.app",
-    messagingSenderId: "278614707881",
-    appId: "1:278614707881:web:97bd3448646c35592a23b8",
-    measurementId: "G-VWMVVJ5W59"
-  }
+const FIREBASE_CONFIG={apiKey:"AIzaSyCNNXMTkpqnHeJibEN4LnFF4LA3XIrwnvU",authDomain:"cef-encuestas.firebaseapp.com",projectId:"cef-encuestas",storageBucket:"cef-encuestas.firebasestorage.app",messagingSenderId:"278614707881",appId:"1:278614707881:web:97bd3448646c35592a23b8",measurementId:"G-VWMVVJ5W59"};
+const SURVEYS={
+ alumnos:{label:"Alumnos",questions:[
+  {id:"nivel",title:"¿En qué nivel y año estás?",type:"closed"},{id:"valora",title:"¿Qué es lo que más valorás de tu día a día en el colegio?",type:"text"},{id:"no_disfruta",title:"¿Y qué es lo que menos disfrutás?",type:"text"},{id:"convivencia",title:"¿La convivencia con profesores y compañeros te genera un entorno seguro y de respeto mutuo?",type:"closed"},{id:"futuro",title:"¿Sentís que lo que aprendés te da herramientas útiles para tu futuro universitario o laboral?",type:"closed"},{id:"director",title:"Si pudieras cambiar algo del colegio para sentirte mejor preparado, ¿qué cambiarías y por qué?",type:"text"}]},
+ docentes:{label:"Docentes",questions:[
+  {id:"recursos_innovacion",title:"¿Sentís que el colegio te provee las herramientas y el respaldo necesarios para cumplir tus objetivos en el aula, especialmente frente a los avances tecnológicos como la IA?",type:"closed"},{id:"desafios_aula",title:"¿Con qué frecuencia las dificultades operativas interfieren en la gestión del aula o en el vínculo con los alumnos?",type:"closed"},{id:"necesidad_recursos",title:"¿Qué tipo de recurso considerás prioritario incorporar para potenciar la calidad educativa?",type:"closed"},{id:"innovacion_metodologia",title:"¿Qué área de la enseñanza considerás que debería recibir mayor impulso para innovar?",type:"closed"},{id:"comunicacion_directivos",title:"¿Cómo evaluás la comunicación y el nivel de colaboración entre el cuerpo docente y el equipo directivo?",type:"closed"},{id:"agilidad_cambio",title:"Frente a cambios sociales, nuevas normativas o situaciones económicas, ¿cómo evaluás la capacidad del colegio para adaptarse y tomar decisiones rápidas para apoyar al docente?",type:"closed"},{id:"eleccion_adn",title:"¿Cuál considerás que es el principal rasgo del colegio que explica que las familias lo elijan?",type:"closed"},{id:"comunicacion_familias",title:"¿Cómo evaluás los canales actuales para comunicar a las familias el desempeño y acompañamiento de los alumnos?",type:"closed"},{id:"propuesta_mejora",title:"Si pudieras implementar un cambio profundo en la currícula o en la metodología de enseñanza, ¿cuál sería?",type:"text"}]},
+ no_docentes:{label:"No Docentes",questions:[
+  {id:"cuellos_botella",title:"¿Con qué frecuencia los circuitos administrativos u operativos dificultan o retrasan tu trabajo diario?",type:"closed"},{id:"tipo_ineficiencia",title:"¿Dónde identificás principalmente las dificultades que retrasan el trabajo?",type:"closed"},{id:"impacto_servicio",title:"¿Cuánto mejorarían la atención a las familias si se agilizaran los procesos internos?",type:"closed"},{id:"clima_trabajo",title:"¿Cómo evaluás el clima interno de trabajo en la actualidad?",type:"closed"},{id:"integracion_areas",title:"¿Qué tan integrada considerás que está la comunicación entre los distintos niveles educativos y las áreas administrativas?",type:"closed"},{id:"mejora_integracion",title:"¿Qué acción concreta sugerís para evitar los problemas de comunicación entre áreas y trabajar de manera más integrada?",type:"text"}]},
+ familias:{label:"Familias",questions:[
+  {id:"motivo_eleccion",title:"¿Cuál fue el principal motivo por el que eligieron nuestra institución para la educación de sus hijos?",type:"closed"},{id:"equilibrio_precio_calidad",title:"Teniendo en cuenta la calidad educativa y el estado de las instalaciones, ¿cómo consideran el equilibrio entre la cuota mensual y el servicio recibido?",type:"closed"},{id:"punto_dolor",title:"¿Cuál consideran que es el principal aspecto institucional que necesita atención o mejora?",type:"closed"},{id:"permanencia",title:"¿En qué medida la mejora de ese aspecto influiría en su decisión de permanecer a largo plazo en el colegio?",type:"closed"},{id:"comunicacion",title:"¿Cómo evalúan los medios y canales actuales de comunicación para realizar consultas y seguir el desempeño de sus hijos?",type:"closed"},{id:"canal_preferido",title:"¿Qué canal o estrategia consideran más útil para mejorar la comunicación entre el colegio y las familias?",type:"closed"},{id:"sugerencia",title:"¿Qué cambio concreto recomendarían para mejorar la experiencia de las familias en el colegio?",type:"text"}]},
+ ex_alumnos:{label:"Ex Alumnos",questions:[
+  {id:"situacion_actual",title:"Actualmente, ¿en qué situación te encontrás?",type:"closed"},{id:"convivencia_retro",title:"Mirando en retrospectiva, ¿cómo valorarías la convivencia con profesores y compañeros durante tu paso por el colegio?",type:"closed"},{id:"valor_experiencia",title:"A la distancia, ¿qué aspecto de los años vividos en la institución valorás más?",type:"closed"},{id:"aspecto_no_disfruta",title:"A la distancia, ¿qué aspecto de la dinámica escolar de aquel entonces recordás como menos satisfactorio?",type:"closed"},{id:"utilidad_formacion",title:"Basado en tu realidad actual, ¿cuánto te resultaron útiles las metodologías y herramientas que te brindó el colegio para tu vida universitaria o laboral?",type:"closed"},{id:"preparacion_actual",title:"¿Cómo valorarías la preparación que recibiste para afrontar los cambios y desafíos de la actualidad?",type:"closed"},{id:"cambio_modernizacion",title:"Si hoy te convocaran como director del colegio para modernizar la institución, ¿qué cambiarías para preparar mejor a las nuevas generaciones?",type:"text"}]},
+ equipo_directivo:{label:"Equipo Directivo",questions:[
+  {id:"agilidad_3_anios",title:"Proyectando los próximos 3 años, ¿qué nivel de adaptación necesitará el colegio frente a los cambios demográficos y tecnológicos como la IA?",type:"closed"},{id:"medidas_agilidad",title:"¿Cómo evalúan las medidas e innovaciones que se están implementando actualmente para lograr una institución más ágil?",type:"closed"},{id:"adn",title:"¿Qué componente consideran que representa con mayor fuerza el ADN único del colegio?",type:"closed"},{id:"reputacion_importancia",title:"¿Qué nivel de prioridad estratégica tiene hoy la gestión de la reputación escolar?",type:"closed"},{id:"gestion_riesgos",title:"¿Cómo evalúan actualmente la capacidad institucional para identificar y monitorear riesgos financieros, de infraestructura y de confianza social?",type:"closed"},{id:"amenaza_prioritaria",title:"¿Cuál consideran que es la principal amenaza para la institución en el corto y mediano plazo?",type:"closed"},{id:"indicador_vital",title:"¿Cuál de estos indicadores consideran más importante para anticiparse a las amenazas institucionales?",type:"closed"},{id:"prioridad_estrategica",title:"¿Qué medida estratégica consideran prioritaria para fortalecer la institución durante los próximos 3 años?",type:"text"}]}
 };
-
-const SURVEY_LABELS = {
-  alumnos: "Alumnos", ex_alumnos: "Ex Alumnos", familias: "Familias",
-  docentes: "Docentes", no_docentes: "No Docentes", equipo_directivo: "Equipo Directivo"
-};
-
-let currentRows = [];
-let currentColumns = [];
-
-if(!CONFIG.FIREBASE_CONFIG){
-  document.getElementById('setupWarning').style.display = 'block';
-  document.getElementById('loginBtn').disabled = true;
-} else {
-  firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
-
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  document.getElementById('loginBtn').onclick = async ()=>{
-    const email = document.getElementById('email').value.trim();
-    const pass = document.getElementById('password').value;
-    const errEl = document.getElementById('loginError');
-    errEl.textContent = '';
-    try{
-      await auth.signInWithEmailAndPassword(email, pass);
-    }catch(err){
-      errEl.textContent = 'No se pudo ingresar. Revisá el email y la contraseña.';
-    }
-  };
-
-  document.getElementById('password').addEventListener('keydown', e=>{
-    if(e.key === 'Enter') document.getElementById('loginBtn').click();
-  });
-
-  document.getElementById('logoutBtn').onclick = ()=> auth.signOut();
-
-  auth.onAuthStateChanged(user=>{
-    if(user){
-      document.getElementById('loginWrap').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      document.getElementById('userBadge').textContent = user.email;
-      loadData();
-    } else {
-      document.getElementById('loginWrap').style.display = 'flex';
-      document.getElementById('app').style.display = 'none';
-    }
-  });
-
-  document.getElementById('surveySelect').addEventListener('change', loadData);
-  document.getElementById('refreshBtn').addEventListener('click', loadData);
-  document.getElementById('downloadBtn').addEventListener('click', downloadExcel);
-
-  async function loadData(){
-    const survey = document.getElementById('surveySelect').value;
-    const tableArea = document.getElementById('tableArea');
-    tableArea.innerHTML = '<div class="loading">Cargando respuestas…</div>';
-
-    try{
-      const snap = await db.collection('responses')
-        .where('survey', '==', survey)
-        .orderBy('submitted_at', 'desc')
-        .get();
-
-      const rows = [];
-      snap.forEach(doc=> rows.push(doc.data()));
-      renderTable(rows);
-    }catch(err){
-      tableArea.innerHTML = '<div class="empty-state">No se pudieron cargar los datos.<br>' +
-        'Si es la primera vez, puede que falte crear el índice en Firestore: revisá la consola del navegador (F12) — Firebase suele dejar ahí un link para crearlo con un clic.</div>';
-      console.error(err);
-    }
-  }
-
-  function renderTable(rows){
-    const tableArea = document.getElementById('tableArea');
-    document.getElementById('countBadge').textContent = rows.length + (rows.length === 1 ? ' respuesta' : ' respuestas');
-
-    if(!rows.length){
-      tableArea.innerHTML = '<div class="empty-state">Todavía no hay respuestas para esta encuesta.</div>';
-      currentRows = []; currentColumns = [];
-      return;
-    }
-
-    // Columnas fijas primero, luego el resto (dinámicas por encuesta) en orden de aparición.
-    const fixed = ['submitted_at', 'respondent_id'];
-    const seen = new Set(fixed);
-    const dynamic = [];
-    rows.forEach(r=>{
-      Object.keys(r).forEach(k=>{
-        if(k === 'survey' || k === 'created_at' || k.endsWith('_label')) return;
-        if(!seen.has(k)){ seen.add(k); dynamic.push(k); }
-      });
-    });
-    const columns = [...fixed, ...dynamic];
-
-    let html = '<table><thead><tr>';
-    columns.forEach(c=> html += `<th>${escapeHtml(prettyLabel(c))}</th>`);
-    html += '</tr></thead><tbody>';
-    rows.forEach(r=>{
-      html += '<tr>';
-      columns.forEach(c=>{
-        // Compatibilidad con respuestas antiguas que guardaban valor numérico + *_label.
-        const legacyLabel = r[c + '_label'];
-        const raw = legacyLabel !== undefined && legacyLabel !== null ? legacyLabel : r[c];
-        const val = raw !== undefined && raw !== null ? String(raw) : '';
-        const long = val.length > 40;
-        html += `<td class="${long ? 'wrap' : ''}">${escapeHtml(val)}</td>`;
-      });
-      html += '</tr>';
-    });
-    html += '</tbody></table>';
-    tableArea.innerHTML = html;
-
-    currentRows = rows.map(r=>{
-      const flat = {};
-      columns.forEach(c=> flat[prettyLabel(c)] = r[c + '_label'] !== undefined ? r[c + '_label'] : (r[c] !== undefined ? r[c] : ''));
-      return flat;
-    });
-    currentColumns = columns;
-  }
-
-  function prettyLabel(key){
-    return key.replace(/_/g,' ').replace(/\b\w/g, m=> m.toUpperCase());
-  }
-
-  function escapeHtml(str){
-    return str.replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-
-  function downloadExcel(){
-    if(!currentRows.length){ alert('No hay datos para descargar todavía.'); return; }
-    const survey = document.getElementById('surveySelect').value;
-    const ws = XLSX.utils.json_to_sheet(currentRows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, SURVEY_LABELS[survey] || survey);
-    XLSX.writeFile(wb, `respuestas_${survey}_${new Date().toISOString().slice(0,10)}.xlsx`);
-  }
-}
+const surveyIds=Object.keys(SURVEYS);let db,auth,allRows=[],charts=[],filteredRows=[];
+const $=id=>document.getElementById(id);function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function valueOf(r,k){if(r[k+'_label']!==undefined&&r[k+'_label']!==null&&r[k+'_label']!=='')return String(r[k+'_label']);if(r[k]!==undefined&&r[k]!==null)return String(r[k]);return ''}
+function dateOf(r){let v=r.submitted_at||r.created_at||'';if(v&&typeof v.toDate==='function')v=v.toDate();const d=v instanceof Date?v:new Date(v);return isNaN(d)?new Date(0):d}
+function qMeta(s,k){return (SURVEYS[s]?.questions||[]).find(q=>q.id===k)}
+function init(){firebase.initializeApp(FIREBASE_CONFIG);auth=firebase.auth();db=firebase.firestore();surveyIds.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=SURVEYS[s].label;$('surveyFilter').appendChild(o)});$('loginBtn').onclick=login;$('password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('logoutBtn').onclick=()=>auth.signOut();auth.onAuthStateChanged(u=>{if(u){$('loginWrap').style.display='none';$('app').style.display='block';$('userBadge').textContent=u.email;loadAll()}else{$('loginWrap').style.display='grid';$('app').style.display='none'}});['surveyFilter','questionFilter','dateFrom','dateTo','optionFilter'].forEach(id=>$(id).addEventListener('change',()=>{if(id==='surveyFilter')buildQuestionFilter();if(id==='questionFilter')updateOptions();render()}));$('resetBtn').onclick=reset;$('downloadAllCsv').onclick=()=>downloadCSV(allRows,'cef_respuestas_todas');$('downloadFilteredCsv').onclick=()=>downloadCSV(filteredRows,'cef_respuestas_filtradas');$('downloadOpenCsv').onclick=()=>downloadCSV(buildOpenRows(filteredRows),'cef_comentarios_abiertos');$('downloadJson').onclick=downloadJSON;$('downloadExcel').onclick=downloadExcel;$('printBtn').onclick=()=>window.print()}
+async function login(){try{$('loginError').textContent='';await auth.signInWithEmailAndPassword($('email').value.trim(),$('password').value)}catch(e){$('loginError').textContent='No se pudo ingresar. Revisá el email y la contraseña.'}}
+async function loadAll(){ $('charts').innerHTML='<div class="empty">Cargando todas las encuestas…</div>';try{const snaps=await Promise.all(surveyIds.map(s=>db.collection('responses').where('survey','==',s).get()));allRows=[];snaps.forEach(snap=>snap.forEach(d=>allRows.push({...d.data(),_doc:d.id})));allRows.sort((a,b)=>dateOf(b)-dateOf(a));buildQuestionFilter();render()}catch(e){console.error(e);$('charts').innerHTML='<div class="empty">No se pudieron cargar los resultados. Revisá autenticación y reglas de Firestore.</div>'}}
+function buildQuestionFilter(){const s=$('surveyFilter').value;let opts=[['all','Todas las preguntas cerradas']];surveyIds.filter(x=>s==='all'||x===s).forEach(x=>(SURVEYS[x].questions||[]).filter(q=>q.type==='closed').forEach(q=>opts.push([x+'|'+q.id,SURVEYS[x].label+' · '+q.title])));$('questionFilter').innerHTML=opts.map(o=>`<option value="${esc(o[0])}">${esc(o[1])}</option>`).join('');updateOptions()}
+function updateOptions(){const q=$('questionFilter').value;let vals=[];if(q!=='all'){const [s,k]=q.split('|');vals=[...new Set(allRows.filter(r=>r.survey===s).map(r=>valueOf(r,k)).filter(Boolean))].sort()}$('optionFilter').innerHTML='<option value="all">Todas</option>'+vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}
+function filtered(){const s=$('surveyFilter').value,q=$('questionFilter').value,opt=$('optionFilter').value,from=$('dateFrom').value,to=$('dateTo').value;return allRows.filter(r=>{if(s!=='all'&&r.survey!==s)return false;const d=dateOf(r);if(from&&d<new Date(from+'T00:00:00'))return false;if(to&&d>new Date(to+'T23:59:59'))return false;if(opt!=='all'){if(q==='all')return true;const [,k]=q.split('|');if(valueOf(r,k)!==opt)return false}return true})}
+function reset(){$('surveyFilter').value='all';$('dateFrom').value='';$('dateTo').value='';buildQuestionFilter();$('questionFilter').value='all';updateOptions();render()}
+function counts(rows,k,allowed){const m=new Map();rows.forEach(r=>{const v=valueOf(r,k);if(!v)return;if(allowed&&!allowed.includes(v))return;m.set(v,(m.get(v)||0)+1)});return [...m.entries()].sort((a,b)=>b[1]-a[1])}
+function render(){filteredRows=filtered();updateSummary(filteredRows);charts.forEach(c=>c.destroy());charts=[];const s=$('surveyFilter').value,q=$('questionFilter').value;$('chartHint').textContent=q==='all'?(s==='all'?'Vista integrada de las seis encuestas.':'Preguntas cerradas de '+SURVEYS[s].label+'.'):'Pregunta seleccionada: '+(q.split('|')[0]===s||s==='all'?'':'');renderCharts(filteredRows,s,q);renderOpen(filteredRows);renderTable(filteredRows)}
+function updateSummary(rows){const latest=rows.length?dateOf(rows[0]):null;const active=new Set(rows.map(r=>r.survey));const closed=rows.reduce((n,r)=>n+Object.values(r).filter(v=>v!==null&&v!==undefined&&v!=='').length,0);$('summary').innerHTML=`<div class="stat"><div class="k">Respuestas visibles</div><div class="v">${rows.length}</div><div class="s">Después de aplicar filtros</div></div><div class="stat"><div class="k">Encuestas con datos</div><div class="v">${active.size}/6</div><div class="s">Tipos institucionales</div></div><div class="stat"><div class="k">Alumnos</div><div class="v">${rows.filter(r=>r.survey==='alumnos').length}</div><div class="s">Respuestas visibles</div></div><div class="stat"><div class="k">Familias</div><div class="v">${rows.filter(r=>r.survey==='familias').length}</div><div class="s">Respuestas visibles</div></div><div class="stat"><div class="k">Última respuesta</div><div class="v" style="font-size:20px">${latest&&latest.getTime()?latest.toLocaleDateString('es-AR'):'—'}</div><div class="s">${latest&&latest.getTime()?latest.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):'Sin datos'}</div></div>`;$('lastUpdate').textContent=latest&&latest.getTime()?'Última respuesta: '+latest.toLocaleString('es-AR'):'Sin datos cargados'}
+function renderCharts(rows,s,q){const host=$('charts');host.innerHTML='';if(!rows.length){host.innerHTML='<div class="empty">No hay respuestas con los filtros seleccionados.</div>';return}if(q==='all'){if(s==='all')renderParticipation(rows,host);surveyIds.filter(x=>s==='all'||x===s).forEach(x=>{const sr=rows.filter(r=>r.survey===x);SURVEYS[x].questions.filter(q=>q.type==='closed').forEach(meta=>renderQuestion(sr,x,meta,host))})}else{const [ss,k]=q.split('|');const meta=qMeta(ss,k);renderQuestion(rows.filter(r=>r.survey===ss),ss,meta,host,true)}}
+function renderParticipation(rows,host){const data=surveyIds.map(s=>rows.filter(r=>r.survey===s).length);const card=makeCard(host,'Respuestas por encuesta','Cantidad de respuestas visibles · todas las encuestas','wide');draw(card.querySelector('canvas'),Object.values(SURVEYS).map(x=>x.label),data,'Respuestas',true)}
+function renderQuestion(rows,s,meta,host,wide=false){const pairs=counts(rows,meta.id);if(!pairs.length)return;const card=makeCard(host,meta.title,SURVEYS[s].label+' · '+pairs.reduce((a,b)=>a+b[1],0)+' respuestas',wide?'wide':'');draw(card.querySelector('canvas'),pairs.map(x=>x[0]),pairs.map(x=>x[1]),'Respuestas',false)}
+function makeCard(host,title,meta,cls){const c=document.createElement('article');c.className='chart-card '+cls;c.innerHTML=`<h4 class="chart-title">${esc(title)}</h4><div class="chart-meta">${esc(meta)}</div><div class="chart-box"><canvas></canvas></div>`;host.appendChild(c);return c}
+function draw(canvas,labels,data,label,wide){const c=new Chart(canvas,{type:'bar',data:{labels,datasets:[{label,data,backgroundColor:'#BD5F26',borderColor:'#3E2415',borderWidth:1,borderRadius:3,maxBarThickness:wide?42:30}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.raw+' respuestas'}}},scales:{x:{ticks:{color:'#5b5048',font:{family:'Sora',size:9},maxRotation:45,minRotation:0},grid:{display:false}},y:{beginAtZero:true,ticks:{stepSize:1,color:'#6b625b',font:{size:9}},grid:{color:'rgba(36,28,21,.08)'}}}}});charts.push(c)}
+function buildOpenRows(rows){const out=[];rows.forEach(r=>{(SURVEYS[r.survey]?.questions||[]).filter(q=>q.type==='text').forEach(q=>{const text=valueOf(r,q.id);if(text)out.push({Encuesta:SURVEYS[r.survey].label,Fecha:dateOf(r).toLocaleString('es-AR'),Pregunta:q.title,Respuesta:text})})});return out}
+function renderOpen(rows){const host=$('openList'),items=buildOpenRows(rows);host.innerHTML=items.length?items.map(x=>`<div class="open-item"><div class="who">${esc(x.Encuesta)} · ${esc(x.Fecha)}</div><div class="txt"><strong>${esc(x.Pregunta)}</strong><br>${esc(x.Respuesta)}</div></div>`).join(''):'<div class="empty">No hay respuestas abiertas con los filtros seleccionados.</div>'}
+function allQuestionColumns(){const cols=[];surveyIds.forEach(s=>SURVEYS[s].questions.forEach(q=>{const key=q.id+'_label';if(!cols.find(c=>c.key===key))cols.push({key,label:SURVEYS[s].label+' · '+q.title})}));return cols}
+function rowExport(r){const o={Encuesta:SURVEYS[r.survey]?.label||r.survey,Fecha:dateOf(r).toLocaleString('es-AR'),ID:r._doc||''};allQuestionColumns().forEach(c=>o[c.label]=valueOf(r,c.key.replace(/_label$/,'')));return o}
+function renderTable(rows){const host=$('dataWrap');const note=$('dataNote');note.textContent=`${rows.length} respuestas visibles · se muestran todas las columnas de preguntas disponibles. Los botones de descarga incluyen todos los registros.`;if(!rows.length){host.innerHTML='<div class="empty">No hay datos para mostrar.</div>';return}const cols=allQuestionColumns();let h='<table class="data-table"><thead><tr><th>Encuesta</th><th>Fecha</th>';cols.forEach(c=>h+=`<th>${esc(c.label)}</th>`);h+='</tr></thead><tbody>';rows.forEach(r=>{h+='<tr><td>'+esc(SURVEYS[r.survey]?.label||r.survey)+'</td><td>'+esc(dateOf(r).toLocaleString('es-AR'))+'</td>';cols.forEach(c=>{const k=c.key.replace(/_label$/,'');h+='<td>'+esc(valueOf(r,k))+'</td>'});h+='</tr>'});h+='</tbody></table>';host.innerHTML=h}
+function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function downloadCSV(rows,name){const data=rows.map(rowExport);if(!data.length){alert('No hay datos para descargar.');return}const headers=[...new Set(data.flatMap(o=>Object.keys(o)))];const csv='\ufeff'+[headers.map(csvCell).join(';'),...data.map(o=>headers.map(h=>csvCell(o[h])).join(';'))].join('\n');downloadBlob(csv,name+'.csv','text/csv;charset=utf-8')}
+function downloadJSON(){if(!allRows.length){alert('No hay datos para descargar.');return}const payload={generado_en:new Date().toISOString(),total_respuestas:allRows.length,respuestas:allRows.map(rowExport)};downloadBlob(JSON.stringify(payload,null,2),'cef_respaldo_completo.json','application/json;charset=utf-8')}
+function downloadExcel(){if(!allRows.length){alert('No hay datos para descargar.');return}if(!window.XLSX){alert('No se cargó el módulo Excel. Podés usar CSV mientras tanto.');return}const wb=XLSX.utils.book_new();const data=allRows.map(rowExport);XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(data),'Respuestas');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(buildOpenRows(allRows)),'Comentarios abiertos');const resumen=surveyIds.map(s=>({Encuesta:SURVEYS[s].label,Respuestas:allRows.filter(r=>r.survey===s).length}));XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(resumen),'Resumen');XLSX.writeFile(wb,'CEF_resultados_completos.xlsx')}
+function downloadBlob(content,name,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500)}
+init();
 </script>
-
-<!-- Firebase Analytics -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCNNXMTkpqnHeJibEN4LnFF4LA3XIrwnvU",
-    authDomain: "cef-encuestas.firebaseapp.com",
-    projectId: "cef-encuestas",
-    storageBucket: "cef-encuestas.firebasestorage.app",
-    messagingSenderId: "278614707881",
-    appId: "1:278614707881:web:97bd3448646c35592a23b8",
-    measurementId: "G-VWMVVJ5W59"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-
-</body>
-</html>
+</body></html>
