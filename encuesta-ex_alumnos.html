@@ -542,6 +542,24 @@ const QUESTIONS = [
     "type": "text",
     "placeholder": "Contanos qué cambiarías…"
   }
+  ,{
+    id: "reputacion_factores",
+    eyebrow: "Reputación institucional",
+    title: "¿Qué dos aspectos considerás que más influyen en la reputación del CEF San Francisco hacia afuera de la institución?",
+    help: "Elegí hasta 2 opciones.",
+    type: "multi",
+    max: 2,
+    options: ["Calidad educativa","Formación en valores","Resultados y trayectoria de sus estudiantes","Calidad y compromiso de los docentes","Acompañamiento a las familias","Convivencia institucional","Actividades deportivas y culturales","Infraestructura","Comunicación e imagen institucional","Participación en la comunidad"],
+    other: true
+  },
+  {
+    id: "reputacion_general",
+    eyebrow: "Percepción general",
+    title: "¿Cómo calificarías la reputación del CEF San Francisco hacia afuera de la institución?",
+    help: "Elegí una opción.",
+    type: "scale",
+    options: ["⭐ Excelente","🟢 Muy buena","🟡 Buena","🟠 Regular","🔴 Mala"]
+  },
 ];
 
 const TOTAL = QUESTIONS.length;
@@ -729,6 +747,30 @@ function render(){
       };
     });
     if(existing) enable();
+  }
+
+  if(q.type === 'multi'){
+    const selected = Array.isArray(existing) ? existing : (existing ? [existing] : []);
+    host.innerHTML = `<div class="pill-grid">${q.options.map(o=>`<button type="button" class="pill multi-opt" data-v="${o}">${o}</button>`).join('')}</div>` +
+      `<div style="margin-top:12px"><button type="button" class="pill" id="otherToggle">Otro</button><input class="field" id="otherReputacion" maxlength="300" placeholder="Escribí tu respuesta…" style="display:none;margin-top:10px" /></div>` +
+      `<p id="multiHint" class="q-help" style="margin-top:10px">Podés elegir hasta ${q.max} opciones.</p>`;
+    const otherInput=host.querySelector('#otherReputacion'), otherToggle=host.querySelector('#otherToggle');
+    const otherSelected=selected.find(v=>String(v).startsWith('Otro:'));
+    host.querySelectorAll('.multi-opt').forEach(btn=>{
+      if(selected.includes(btn.dataset.v)) btn.classList.add('sel');
+      btn.onclick=()=>{ const n=host.querySelectorAll('.multi-opt.sel').length; if(!btn.classList.contains('sel')&&n>=q.max)return; btn.classList.toggle('sel'); updateMulti(); };
+    });
+    if(otherSelected){ otherToggle.classList.add('sel'); otherInput.style.display='block'; otherInput.value=String(otherSelected).replace(/^Otro:\s*/,''); }
+    otherToggle.onclick=()=>{otherToggle.classList.toggle('sel');otherInput.style.display=otherToggle.classList.contains('sel')?'block':'none';if(!otherToggle.classList.contains('sel'))otherInput.value='';updateMulti();};
+    otherInput.addEventListener('input',updateMulti);
+    function updateMulti(){
+      let vals=[...host.querySelectorAll('.multi-opt.sel')].map(b=>b.dataset.v);
+      if(otherToggle.classList.contains('sel')&&otherInput.value.trim()) vals.push('Otro: '+otherInput.value.trim());
+      answers[q.id]=vals.slice(0,q.max);
+      nextBtn.disabled=answers[q.id].length<1 || (otherToggle.classList.contains('sel')&&!otherInput.value.trim());
+      host.querySelector('#multiHint').textContent=`${answers[q.id].length} de ${q.max} opciones seleccionadas`;
+    }
+    updateMulti();
   }
 
   if(q.type === 'scale'){
