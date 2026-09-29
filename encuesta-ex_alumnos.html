@@ -195,6 +195,23 @@
     transition:border-color .2s ease;
   }
   textarea.field:focus{border-color:var(--terra);}
+  input.year-field{
+    width:220px;
+    padding:14px 2px;
+    font-family:var(--serif);
+    font-size:32px;
+    color:var(--tinta);
+    background:transparent;
+    border:none;
+    border-bottom:2px solid var(--tinta-35);
+    outline:none;
+    transition:border-color .2s ease;
+  }
+  input.year-field:focus{border-color:var(--terra);}
+  input.year-field::placeholder{color:var(--tinta-35);font-style:italic;}
+  input.year-field::-webkit-outer-spin-button,
+  input.year-field::-webkit-inner-spin-button{margin:0;}
+
   textarea.field::placeholder{color:var(--tinta-35); font-style:italic;}
 
   .chargecount{font-size:12px; color:var(--tinta-35); margin-top:8px; text-align:right;}
@@ -399,7 +416,7 @@
 
     <div>
       <div class="cordon-wrap">
-        <div class="cordon-label"><span>Cíngulo de respuestas</span><b id="cordonCount">0 / 6</b></div>
+        <div class="cordon-label"><span>Cíngulo de respuestas</span><b id="cordonCount">0 / 10</b></div>
         <svg class="cordon" viewBox="0 0 260 26" id="cordonDesktop"></svg>
       </div>
       <div class="rail-foot" style="margin-top:22px;">Respuestas anónimas · Centro Educativo Franciscano</div>
@@ -448,6 +465,13 @@ if(CONFIG.FIREBASE_CONFIG && window.firebase){
 
 /* ---------- Contenido de la encuesta ---------- */
 const QUESTIONS = [
+  {
+    "id": "anio_egreso",
+    "eyebrow": "Para empezar",
+    "title": "¿En qué año egresaste del CEF San Francisco?",
+    "help": "Ingresá el año de egreso.",
+    "type": "year"
+  },
   {
     "id": "situacion_actual",
     "eyebrow": "Para empezar",
@@ -644,7 +668,7 @@ function render(){
       <h1>Tu voz construye<br>el colegio que viene</h1>
       <p class="lede">Como parte de la comunidad educativa, tu experiencia diaria es información real: nos ayuda a decidir qué espacios, herramientas y formas de enseñar mejorar primero.</p>
       <div class="meta-row">
-        <div><b>6</b>preguntas</div>
+        <div><b>10</b>preguntas</div>
         <div><b>~4</b>minutos</div>
         <div><b>100%</b>anónima</div>
       </div>
@@ -719,6 +743,28 @@ function render(){
   const existing = answers[q.id];
 
   function enable(){ nextBtn.disabled = false; }
+
+  if(q.type === 'year'){
+    const currentYear = new Date().getFullYear();
+    host.innerHTML = `<input class="field year-field" type="number" inputmode="numeric" min="1900" max="${currentYear}" placeholder="Ej. 2018" />`;
+    const input = host.querySelector('input');
+    if(existing) input.value = existing;
+    input.addEventListener('input', ()=>{
+      let value = input.value.replace(/\D/g,'').slice(0,4);
+      input.value = value;
+      const year = Number(value);
+      const valid = value.length === 4 && year >= 1900 && year <= currentYear;
+      if(valid){
+        answers[q.id] = value;
+        enable();
+      }else{
+        delete answers[q.id];
+        nextBtn.disabled = true;
+      }
+    });
+    if(existing) enable();
+    setTimeout(()=>input.focus(), 200);
+  }
 
   if(q.type === 'text'){
     host.innerHTML = `<textarea class="field" placeholder="${q.placeholder||''}" maxlength="600"></textarea><div class="chargecount"><span id="cc">0</span>/600</div>`;
